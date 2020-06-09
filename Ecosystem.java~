@@ -1,0 +1,184 @@
+/* Dennis Li
+ * Eco System Simulator
+ * 11/22/2018
+ * Version Final
+ * 
+ * Sheep, wolves, plants, and creepers are generated into a board andinteract with each other until either sheep or wolves are completely gone. 
+ * 
+ * Addition add-ons:
+ * - Species have age which affect appearance and die at a certain age
+ * - Grass have different nutritional value and their current nutritional value determines their appearence
+ * - All animals have a vision of 8 blocks surrounding them, and if their pray (grass for sheep and sheep for wolves) are
+ * within the vision, they will travel directly towards it
+ * - Sheep have gender which determines if they can reproduce or not.
+ * - When sheep breed the new born sheep will spawn close to the original breed location
+ * - Wolves walk over and destroy plants.
+ * - Creepers walk around the map every 3 turns and if there is anything surrounding it, the creeper will explode in a
+ * 1 block radius
+ * - The amount of sheep, wolves, and grass are displayed on the screen
+ * - If a wolf has less health than another and they collide, the wolf who wins will lose the amount of health
+ * that the other wolf had.
+ */
+import java.util.Scanner;
+
+class Ecosystem{ 
+  
+  static boolean wolfAlive = true;
+  static boolean sheepAlive = true;
+  static int sheepCount;
+  static int grassCount;
+  static int wolfCount;
+  public static void main(String[] args){ 
+    int mapSize;
+    
+    Scanner input = new Scanner(System.in);
+    
+    // Initialize Map
+    //ask the user how they want the map to be set up
+    System.out.println("How big do you want the map to be? Recommended 50"); 
+    mapSize = input.nextInt();
+    Entity map[][] = new Entity[mapSize][mapSize];
+    
+    System.out.println("How many sheep would you like to spawn? Recommended 80");
+    sheepCount = input.nextInt();
+    
+    System.out.println("How much grass would you like to spawn? Recommended 200");
+    grassCount = input.nextInt();
+    
+    System.out.println("How many wolves would you like to spawn? Recommended 30");
+    wolfCount = input.nextInt();
+    
+    setMap(map,sheepCount, wolfCount, grassCount, input);
+    
+    System.out.println("After how many turns would you like to spawn a grass? Recommended 3");
+    int grassFrequency = input.nextInt();
+    int numOfTurns = 0;
+    
+//    moveItemsOnGrid(map);
+    input.close();
+    
+    // display the fake grid on Console
+    //DisplayGridOnConsole(map);
+    
+    //Set up Grid Panel
+    DisplayGrid grid = new DisplayGrid(map);
+    
+    while(wolfAlive && sheepAlive) {
+      wolfAlive = false;
+      sheepAlive = false;
+      //Display the grid on a Panel
+      grid.refresh();
+      if (numOfTurns == grassFrequency){
+        int randomGrassCoordX;
+        int randomGrassCoordY;      
+        do{
+          randomGrassCoordX = (int)(Math.random()*map.length);
+          randomGrassCoordY = (int)(Math.random()*map.length);
+        }while (map[randomGrassCoordY][randomGrassCoordX] != null);
+        map[randomGrassCoordY][randomGrassCoordX] = new Grass(60, randomGrassCoordX, randomGrassCoordY);
+        numOfTurns = 0;
+        grassCount ++;
+      }
+      
+      //Small delay
+      try{ Thread.sleep(33); }catch(Exception e) {};
+      
+      
+      // Initialize Map (Making changes to map)
+      moveItemsOnGrid(map);
+      checkIfSpeciesAlive(map);
+      
+      //Display the grid on a Panel
+      grid.refresh();
+      numOfTurns ++;
+    }
+  }
+  /**
+   * method to put entities on the grid
+   * @param map takes in map.
+   * @param sheepCount takes in user input for amount of sheeps
+   * @param wolfCount takes in user input for amount of wolves
+   * @param grassCount takes in user input for amount of grass
+   * @param input takes in scanner
+   */ 
+  public static void setMap(Object[][] map, int sheepCount, int wolfCount, int grassCount, Scanner input){  
+    
+    for (int i = 0; i < sheepCount; i++){
+      int randomSheepCoordX;
+      int randomSheepCoordY;
+      do{
+        randomSheepCoordX = (int)(Math.random()*map.length);
+        randomSheepCoordY = randomSheepCoordY = (int)(Math.random()*map.length);
+      }while (map[randomSheepCoordY][randomSheepCoordX] != null);
+      map[randomSheepCoordY][randomSheepCoordX] = new Sheep(60, randomSheepCoordX, randomSheepCoordY);
+    }   
+    for (int i = 0; i < grassCount; i++){
+      int randomGrassCoordX;
+      int randomGrassCoordY;      
+      do{
+        randomGrassCoordX = (int)(Math.random()*map.length);
+        randomGrassCoordY = (int)(Math.random()*map.length);
+      }while (map[randomGrassCoordY][randomGrassCoordX] != null);
+      map[randomGrassCoordY][randomGrassCoordX] = new Grass(60, randomGrassCoordX, randomGrassCoordY);
+    }
+    for (int i = 0; i < wolfCount; i++){
+      int randomWolfCoordX;
+      int randomWolfCoordY;
+      do{
+        randomWolfCoordX = (int)(Math.random()*map.length);
+        randomWolfCoordY = (int)(Math.random()*map.length);
+      }while (map[randomWolfCoordY][randomWolfCoordX] != null);
+      map[randomWolfCoordY][randomWolfCoordX] = new Wolf(60, randomWolfCoordX, randomWolfCoordY);
+    }
+    for (int i = 0; i < 10; i++){
+      int randomCreeperCoordX;
+      int randomCreeperCoordY;
+      do{
+        randomCreeperCoordX = (int)(Math.random()*map.length);
+        randomCreeperCoordY = (int)(Math.random()*map.length);
+      }while (map[randomCreeperCoordY][randomCreeperCoordX] != null);
+      map[randomCreeperCoordY][randomCreeperCoordX] = new Creeper(60, randomCreeperCoordX, randomCreeperCoordY);
+    }
+  }
+  
+  /**
+   * method to simulate grid movement
+   * @param map takes in map.
+   */ 
+  public static void moveItemsOnGrid(Entity[][] map){  
+    
+    for(int i = 0; i<map[0].length;i++){  // run through all entity's decisions
+      for(int j = 0; j<map.length;j++){
+        if (map[i][j] != null){
+          map[i][j].decision(map, i, j);
+        }
+      }           
+    }
+    for(int i = 0; i<map[0].length;i++){        // add age and set animal to not tired
+      for(int j = 0; j<map.length;j++){   
+        if (map[i][j] instanceof Animal){
+          ((Animal)map[i][j]).setTired(false);
+          ((Animal)map[i][j]).addAge();
+        }
+        if (map[i][j] instanceof ExplodedArea){ // set justExploded variable to False as its first turn elapsed already
+          ((ExplodedArea)map[i][j]).setExploded();
+        }
+      }
+    }
+  }
+  /**
+   * method to check if species are alive
+   * @param map takes in map.
+   */ 
+  public static void checkIfSpeciesAlive(Entity[][] map){
+    for(int i = 0; i<map[0].length;i++){ 
+      for(int j = 0; j<map.length;j++){
+        if (map[i][j] instanceof Sheep){
+          sheepAlive = true;
+        }if (map[i][j] instanceof Wolf){
+          wolfAlive = true;
+        }
+      }
+    }
+  }
+}

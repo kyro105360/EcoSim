@@ -1,0 +1,15 @@
+public class Grass extends Plant{
+  
+  Grass(int h, int x, int y){
+    super(h, x, y);
+  }
+  public void decision(Entity[][] map, int y, int x){
+    if (getHealth() >= 0){
+      setX(x);
+      setY(y);
+      loseHealth(1);
+    }else{
+      map[y][x] = null;
+    }   
+  }
+}

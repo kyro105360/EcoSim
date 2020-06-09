@@ -1,0 +1,9 @@
+abstract public class Plant extends Entity{
+  private int x;
+  private int y;
+  
+  Plant(int h, int x, int y){
+    super(h, x, y);
+  }
+
+}

@@ -1,0 +1,66 @@
+/**
+ * Animal
+ * Animal Entity that can be transformed to either sheep, wolf, or creeper.
+ */
+abstract public class Animal extends Entity implements Move{
+  private int x;
+  private int y;
+  private int age;
+  private boolean tired; // variable to make sure animals dont preform 2 actions in one turn
+  
+  Animal(int h, int x, int y){
+    super(h, x, y);
+    this.x = x;
+    this.y = y;
+    this.age = 0;
+    this.tired = false;
+  }
+  
+  public int getAge(){
+    return this.age;
+  }
+  public void addAge(){
+    this.age += 1;
+  }
+  public void setTired(boolean decision){
+    this.tired = decision;
+  }
+  public boolean getTired(){
+    return this.tired;
+  }
+  /**
+   * method to make animals move randomly
+   * @param map takes in map.
+   * @param y takes in coordinate on map
+   * @param x takes in coordinate on map
+   */
+  public void moveRandom(Entity map[][], int y, int x){
+    int moveChoice = 0;
+    boolean moved = false;
+    do{
+      moveChoice = (int)(Math.random()*4) + 1;
+      // make sure not instance of wolf so that sheeps dont move into wolf location
+      if (moveChoice == 1 && getY() -1 >=0 && !(map[y-1][x] instanceof Wolf) && 
+          !(map[y-1][x] instanceof ExplodedArea)){ // move up
+        move(map, x, y, x, y-1);
+        moved = true;
+        
+      }else if (moveChoice == 2 && getY() + 1 < map.length  && !(map[y+1][x] instanceof Wolf) && 
+                !(map[y+1][x] instanceof ExplodedArea)){ // move down 
+        move(map, x, y, x, y+1);
+        moved = true;
+        
+      }else if (moveChoice == 3 && getX() - 1 >= 0  && !(map[y][x-1] instanceof Wolf) && 
+                !(map[y][x-1] instanceof ExplodedArea)){ // move left
+        move(map, x, y, x-1, y);
+        moved = true;
+        
+      }else if (moveChoice == 4 && getX() + 1 < map.length && !(map[y][x+1] instanceof Wolf)&&
+                !(map[y][x+1] instanceof ExplodedArea)){ // move right
+        move(map, x, y, x+1, y);   
+        moved = true;
+      }
+    }while (!moved);
+  }
+}
+

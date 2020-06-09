@@ -1,0 +1,3 @@
+public interface Move{
+  public void move(Entity[][] map, int x, int y, int destX, int destY);
+}
